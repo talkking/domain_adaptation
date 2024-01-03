@@ -1,0 +1,49 @@
+# Hyper-parameters, which is not directly used by our framework
+hparams:
+  verbose: --print-args=false --verbose=-4
+  exp_name: lstmlm2L_target_domain_aviage
+
+checkpoint_dir: exp/${hparams.exp_name} #_${loss.name}
+
+data:
+  # data_dir relative to the current work dir
+  data_dir: data/target_domain_aviage #data/train_aitrans_200820 #data/chn_3K_200319
+  dataset:
+    data_rspecs:
+      feat:
+        - template: ark:copy-feats ${hparams.verbose} scp:SPLIT_PYRE/feats.scp ark:- |
+      ali:
+        - template: ark:copy-int-vector ark:SPLIT_PYRE/text ark:- | 
+                   #ark:copy-int-vector ark:SPLIT_PYRE/ali4.ark ark:- |
+  collector:
+    frame_limit: 100000
+    max_length: 5000
+    minibatch_size: 1000 #1000
+  no_split: True
+  inplace_split: True
+
+optim:
+  optimizer: adam
+  lr: 3e-4
+  weight_decay: 0
+
+dist:
+  global_optimizer: bm #sync
+  merge_size: 120000 #1
+
+model:
+  name: LSTMLM
+  nproj: 512
+  nhid: 1024
+  nvocab: 6983
+  nlayers: 2
+  max_norm: 1000
+
+loss:
+  name: LSLoss
+  avg: True
+  tgt_vocab_size: 6983
+
+scheduler:
+  warmup_round: 100
+  warmup_batches_per_round: 100
